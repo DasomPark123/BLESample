@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">BLESample</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Tabs Names -->
+    <string name="connection">Connection</string>
+    <string name="data_communication">Data Communication</string>
+
+    <!-- Connection Fragment -->
+    <string name="ble_connected_device">BLE connected device</string>
+    <string name="ble_available_devices">BLE available devices</string>
+    <string name="ble_start_search_devices">Start Search BLE devices</string>
+    <string name="ble_stop_search_devices">Stop Search BLE devices</string>
+    <string name="unknown">unknown</string>
+
+    <string-array name="tabs_names">
+        <item>@string/connection</item>
+        <item>@string/data_communication</item>
+    </string-array>
+</resources>
