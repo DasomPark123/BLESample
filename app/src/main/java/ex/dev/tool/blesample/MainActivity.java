@@ -1,6 +1,11 @@
 package ex.dev.tool.blesample;
 
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothGatt;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -16,6 +21,8 @@ public class MainActivity extends FragmentActivity
 {
     private ViewPager2 viewPager;
     private FragmentStateAdapter pagerAdapter;
+
+    private BluetoothGatt bluetoothGatt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -33,4 +40,11 @@ public class MainActivity extends FragmentActivity
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) ->
                 tab.setText(tabsName[position])).attach();
     }
+
+//    private BluetoothGatt getBluetoothGatt()
+//    {
+//        if(bluetoothGatt == null)
+//            bluetoothGatt = new
+//        return bluetoothGatt
+//    }
 }

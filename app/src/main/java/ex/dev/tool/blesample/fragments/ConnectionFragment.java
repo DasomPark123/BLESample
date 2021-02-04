@@ -2,15 +2,17 @@ package ex.dev.tool.blesample.fragments;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,16 +21,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import java.util.ArrayList;
 
@@ -41,7 +46,7 @@ public class ConnectionFragment extends Fragment
 {
     private final String TAG = getClass().getSimpleName();
     private Button btnSearch;
-    private Button btnStop;
+    private ImageButton btnClearAndRefresh;
 
     private Context context;
 
@@ -81,14 +86,15 @@ public class ConnectionFragment extends Fragment
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_connection, container, false);
 
         btnSearch = rootView.findViewById(R.id.btn_search);
-        btnSearch.setOnClickListener(onClickListener);
-        btnStop = rootView.findViewById(R.id.btn_stop);
-        btnStop.setOnClickListener(onClickListener);
+        btnSearch.setOnClickListener(onScanClickListener);
+        btnClearAndRefresh = rootView.findViewById(R.id.btn_stop);
+        btnClearAndRefresh.setOnClickListener(onIconClickListener);
 
         recyclerView = rootView.findViewById(R.id.rv_device_list);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(linearLayoutManager);
-        rvAdapter = new RecyclerViewAdapter(devices, context);
+        recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
+        rvAdapter = new RecyclerViewAdapter(devices, context, onItemClickListener);
         recyclerView.setAdapter(rvAdapter);
 
         requestPermission();
@@ -114,7 +120,6 @@ public class ConnectionFragment extends Fragment
                     Manifest.permission.BLUETOOTH_ADMIN,
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
             };
 
             if(!hasPermissions(context, PERMISSIONS))
@@ -155,8 +160,7 @@ public class ConnectionFragment extends Fragment
 
         if(!isGpsEnable)
         {
-            Intent enableLocationIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivityForResult(enableLocationIntent, REQUEST_ENABLE_LOCATION);
+            requestGPSEnable();
         }
     }
 
@@ -167,6 +171,49 @@ public class ConnectionFragment extends Fragment
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
+    }
+
+    public void requestGPSEnable()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(getString(R.string.dialog_gps_title));
+        builder.setMessage(getString(R.string.dialog_gps_msg));
+        builder.setCancelable(false);
+        builder.setOnKeyListener(new DialogInterface.OnKeyListener()
+        {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event)
+            {
+                if(keyCode == KeyEvent.KEYCODE_BACK)
+                {
+                    dialog.dismiss();
+                    getActivity().finish();
+                }
+                return false;
+            }
+        });
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                Intent enableLocationIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivityForResult(enableLocationIntent, REQUEST_ENABLE_LOCATION);
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+                getActivity().finish();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.setCancelable(false);
+        alert.show();
     }
 
     private void scanLEDevice(final boolean enable)
@@ -182,12 +229,16 @@ public class ConnectionFragment extends Fragment
                     Log.d(TAG,"stop enable:true");
                     isScanning = false;
                     leScanner.stopScan(scanCallback);
+                    changeUI(isScanning);
+
                 }
             }, SCAN_PERIOD);
 
             Log.d(TAG,"start");
+            rvAdapter.clear();
             isScanning = true;
             leScanner.startScan(scanCallback);
+            changeUI(isScanning);
         }
         /* Stop */
         else
@@ -195,6 +246,21 @@ public class ConnectionFragment extends Fragment
             Log.d(TAG,"stop enable:false");
             isScanning = false;
             leScanner.stopScan(scanCallback);
+            changeUI(isScanning);
+        }
+    }
+
+    private void changeUI(boolean isScanning)
+    {
+        if(isScanning)
+        {
+            btnSearch.setText(getString(R.string.ble_stop_search_devices));
+            btnClearAndRefresh.setImageResource(R.drawable.outline_cached_24);
+        }
+        else
+        {
+            btnSearch.setText(getString(R.string.ble_start_search_devices));
+            btnClearAndRefresh.setImageResource(R.drawable.outline_delete_24);
         }
     }
 
@@ -211,8 +277,16 @@ public class ConnectionFragment extends Fragment
                 @Override
                 public void run()
                 {
-                    rvAdapter.addDevice(result.getDevice());
-                    rvAdapter.notifyDataSetChanged();
+                    /* Remove duplication */
+                    boolean isExist = false;
+                    for (int i = 0; i < devices.size(); i++)
+                    {
+                        if(result.getDevice().getAddress().equalsIgnoreCase(devices.get(i).getMacAddress()))
+                            isExist = true;
+                    }
+
+                    if(!isExist)
+                        addDevice(result.getDevice());
                 }
             });
         }
@@ -224,6 +298,25 @@ public class ConnectionFragment extends Fragment
             Log.d(TAG,"error code : " + errorCode);
         }
     };
+
+    private void addDevice(BluetoothDevice device)
+    {
+        BLEDevice bleDevice = new BLEDevice();
+
+        String deviceName = device.getName();
+        if(deviceName == null || deviceName.isEmpty())
+            deviceName = context.getString(R.string.unknown);
+
+        String macAddress = device.getAddress();
+        if(macAddress == null || macAddress.isEmpty())
+            macAddress = context.getString(R.string.unknown);
+
+        bleDevice.setDeviceName(deviceName);
+        bleDevice.setMacAddress(macAddress);
+
+        devices.add(bleDevice);
+        rvAdapter.notifyDataSetChanged();
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
@@ -240,20 +333,42 @@ public class ConnectionFragment extends Fragment
         }
     }
 
-    private View.OnClickListener onClickListener = new View.OnClickListener()
+    private View.OnClickListener onScanClickListener = new View.OnClickListener()
     {
         @Override
         public void onClick(View v)
         {
-            switch(v.getId()){
-                case R.id.btn_search :
-                    scanLEDevice(true);
-                    break;
-                case R.id.btn_stop :
-                    scanLEDevice(false);
-                default:
-                    break;
+            if(!isScanning)
+                scanLEDevice(true);
+            else
+                scanLEDevice(false);
+        }
+    };
+
+    private View.OnClickListener onIconClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            if(!isScanning)
+            {
+                rvAdapter.clear();
+                rvAdapter.notifyDataSetChanged();
             }
+            else
+            {
+                rvAdapter.clear();
+                scanLEDevice(true);
+            }
+        }
+    };
+
+    private View.OnClickListener onItemClickListener = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+
         }
     };
 }

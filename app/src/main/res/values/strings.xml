@@ -7,6 +7,12 @@
     <string name="connection">Connection</string>
     <string name="data_communication">Data Communication</string>
 
+    <!-- Dialog -->
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="dialog_gps_title">Location</string>
+    <string name="dialog_gps_msg">Location is supposed to be enabled to use BLE. Please enable Location on settings.</string>
+
     <!-- Connection Fragment -->
     <string name="ble_connected_device">BLE connected device</string>
     <string name="ble_available_devices">BLE available devices</string>

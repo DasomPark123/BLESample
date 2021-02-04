@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <com.google.android.material.tabs.TabLayout
@@ -10,13 +10,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:tabMode="scrollable"
-        app:tabGravity="center"/>
+        app:tabGravity="center"
+        app:tabIndicatorFullWidth="false"
+        app:tabMinWidth="140dp"/>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager"
         app:layout_anchor="@id/tab_layout"
         app:layout_anchorGravity="bottom"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>
