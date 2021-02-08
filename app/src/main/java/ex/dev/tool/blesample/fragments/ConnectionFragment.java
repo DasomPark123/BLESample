@@ -111,6 +111,13 @@ public class ConnectionFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
     }
 
+    private boolean checkIsLEAvailable()
+    {
+        if(context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
+           return true;
+        return false;
+    }
+
     private void requestPermission()
     {
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.M)
