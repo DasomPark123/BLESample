@@ -20,6 +20,11 @@
     <string name="ble_stop_search_devices">Stop Search BLE devices</string>
     <string name="unknown">unknown</string>
 
+    <string name="central">central</string>
+    <string name="peripheral">peripheral</string>
+    <string name="send">send</string>
+    <string name="close">close</string>
+
     <string-array name="tabs_names">
         <item>@string/connection</item>
         <item>@string/data_communication</item>
