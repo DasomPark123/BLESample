@@ -1,24 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:padding="10dp"
     android:orientation="vertical">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
+    <Button
+        android:id="@+id/btn_central"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:tabMode="scrollable"
-        app:tabGravity="center"
-        app:tabIndicatorFullWidth="false"
-        app:tabMinWidth="140dp"/>
+        android:text="@string/central"/>
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewpager"
-        app:layout_anchor="@id/tab_layout"
-        app:layout_anchorGravity="bottom"
+    <Button
+        android:id="@+id/btn_peripheral"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text="@string/peripheral"/>
 
 </LinearLayout>

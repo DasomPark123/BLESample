@@ -1,4 +1,4 @@
-package ex.dev.tool.blesample.fragments;
+package ex.dev.tool.blesample.central.fragments;
 
 import android.content.Context;
 import android.os.Bundle;

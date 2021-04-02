@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import ex.dev.tool.blesample.fragments.ConnectionFragment;
-import ex.dev.tool.blesample.fragments.DataCommunicationFragment;
+import ex.dev.tool.blesample.central.fragments.ConnectionFragment;
+import ex.dev.tool.blesample.central.fragments.DataCommunicationFragment;
 
 public class ViewpagerAdapter extends FragmentStateAdapter
 {

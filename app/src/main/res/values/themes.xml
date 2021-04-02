@@ -57,5 +57,11 @@
         <item name="android:textColor">@color/purple_700</item>
         <item name="android:textSize">14sp</item>
     </style>
+    <style name="Theme.BLESample.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+    <style name="Theme.BLESample.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.BLESample.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 </resources>

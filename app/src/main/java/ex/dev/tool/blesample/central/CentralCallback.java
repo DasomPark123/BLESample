@@ -4,6 +4,7 @@ public interface CentralCallback
 {
     void requestEnableBLE();
     void requestLocationPermission();
-    void onStatusMsg(String msg);
+    void requestLocationOn();
+    void onStatus(String msg);
     void onToast(String msg);
 }
