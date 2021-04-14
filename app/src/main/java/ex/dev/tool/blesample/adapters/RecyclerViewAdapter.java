@@ -54,24 +54,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
         return devices.size();
     }
 
-
-    public void addDevice(BluetoothDevice device)
-    {
-        BLEDevice bleDevice = new BLEDevice();
-
-        String deviceName = device.getName();
-        if(deviceName == null || deviceName.isEmpty())
-            deviceName = context.getString(R.string.unknown);
-
-        String macAddress = device.getAddress();
-        if(macAddress == null || macAddress.isEmpty())
-            macAddress = context.getString(R.string.unknown);
-
-        bleDevice.setDeviceName(deviceName);
-        bleDevice.setMacAddress(macAddress);
-        devices.add(bleDevice);
-    }
-
     public void clear()
     {
         devices.clear();

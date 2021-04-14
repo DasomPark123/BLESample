@@ -31,7 +31,7 @@ public class Utils
         });
     }
 
-    public void showDialog(Context context, String title, String msg)
+    public AlertDialog showDialog(Context context, String title, String msg)
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title);
@@ -48,5 +48,7 @@ public class Utils
 
         AlertDialog alert = builder.create();
         alert.show();
+
+        return alert;
     }
 }

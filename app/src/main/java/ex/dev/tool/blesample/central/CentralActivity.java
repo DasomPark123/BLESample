@@ -19,11 +19,15 @@ public class CentralActivity extends FragmentActivity
     private ViewPager2 viewPager;
     private FragmentStateAdapter pagerAdapter;
 
+    private CentralManager centralManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_central);
+
+        centralManager = CentralManager.getInstance(this);
 
         viewPager = findViewById(R.id.viewpager);
         pagerAdapter = new ViewpagerAdapter(this, new ConnectionFragment(this));
@@ -34,5 +38,13 @@ public class CentralActivity extends FragmentActivity
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) ->
                 tab.setText(tabsName[position])).attach();
+    }
+
+    public CentralManager getCentralManager()
+    {
+        if(centralManager == null)
+            centralManager = CentralManager.getInstance(this);
+
+        return centralManager;
     }
 }

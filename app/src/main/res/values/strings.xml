@@ -16,8 +16,8 @@
     <!-- Connection Fragment -->
     <string name="ble_connected_device">BLE connected device</string>
     <string name="ble_available_devices">BLE available devices</string>
-    <string name="ble_start_search_devices">Start Search BLE devices</string>
-    <string name="ble_stop_search_devices">Stop Search BLE devices</string>
+    <string name="ble_start_search_devices">Start Search</string>
+    <string name="ble_stop_search_devices">Stop Search</string>
     <string name="unknown">unknown</string>
 
     <string name="central">central</string>
@@ -30,6 +30,10 @@
     <string name="disconnect">disconnect</string>
     <string name="clear">clear</string>
     <string name="ble_not_supported">BLE not supported.</string>
+
+    <!--Permission-->
+    <string name="check_is_ble_support">Check BLE Support</string>
+    <string name="ble_not_support">BLE not supported for this device</string>
 
     <string-array name="tabs_names">
         <item>@string/connection</item>

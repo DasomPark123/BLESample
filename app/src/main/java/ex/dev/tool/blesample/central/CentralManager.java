@@ -92,14 +92,14 @@ public class CentralManager
         /* 위치 권한 체크. android9 까지는 ACCESS_COARSE_LOCATION, 그 이후 버전은 ACCESS_FINE_LOCATION 쓰면 됨 */
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            centralCallback.requestLocationPermission();
+            centralCallback.onRequestLocationPermission();
             centralCallback.onStatus("Requesting location permission");
             return false;
         }
 
         /* 블루투스 사용 가능한지 체크 */
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-            centralCallback.requestEnableBLE();
+            centralCallback.onRequestEnableBLE();
             centralCallback.onStatus("Requesting enable bluetooth");
             return false;
         }
@@ -108,7 +108,7 @@ public class CentralManager
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
         {
-            centralCallback.requestLocationOn();
+            centralCallback.onRequestLocationOn();
             centralCallback.onStatus("Requesting enable location on");
             return false;
         }
@@ -150,7 +150,7 @@ public class CentralManager
     };
 
     /* 스캔 정지 */
-    private void stopScan() {
+    public void stopScan() {
         if (isScanning && bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothLeScanner != null) {
             bluetoothLeScanner.stopScan(scanCallback);
             scanComplete();
@@ -282,37 +282,21 @@ public class CentralManager
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
             Log.d(TAG, "onScanResult");
-            addScanResult(result);
+            notifyScanResult(result);
         }
 
-//        @Override
-//        public void onBatchScanResults(List<ScanResult> results) {
-//            super.onBatchScanResults(results);
-//            Log.d(TAG, "onBatchScanResults");
-//            for (ScanResult result : results) {
-//                addScanResult(result);
-//            }
-//        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            super.onScanFailed(errorCode);
-            Log.e(TAG, "BLE scan failed with code : " + errorCode);
-        }
-
-
-        private void addScanResult(ScanResult result) {
+        private void notifyScanResult(ScanResult result) {
             BluetoothDevice device = result.getDevice();
             String deviceAddress = device.getAddress();
             Log.e(TAG, "scanned device : " + device.getName() + ", " + device.getAddress());
             if(!scanResults.containsKey(device.getAddress())) {
-                centralCallback.onStatus("scanned device : " + device.getName() + ": " + device.getAddress());
+                centralCallback.onScanDeviceResult(device);
                 scanResults.put(deviceAddress, device);
 
-                if(device.getName() != null && device.getName().equalsIgnoreCase("SN2033910131"))
-                {
-                    connectDevice(device);
-                }
+//                if(device.getName() != null && device.getName().equalsIgnoreCase("SN2033910131"))
+//                {
+//                    connectDevice(device);
+//                }
             }
         }
     }

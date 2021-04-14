@@ -1,10 +1,13 @@
 package ex.dev.tool.blesample;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.View;
@@ -42,7 +45,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkBLESupported() {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            utils.showDialog(this, getString(R.string.peripheral), getString(R.string.ble_not_supported));
+            AlertDialog dialog = utils.showDialog(this, getString(R.string.check_is_ble_support), getString(R.string.ble_not_supported));
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener()
+            {
+                @Override
+                public void onDismiss(DialogInterface dialog)
+                {
+                    finish();
+                }
+            });
         }
     }
 
