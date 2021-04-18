@@ -7,6 +7,8 @@ public interface CentralCallback
     void onRequestEnableBLE();
     void onRequestLocationPermission();
     void onRequestLocationOn();
-    void onStatus(String msg);
     void onScanDeviceResult(BluetoothDevice device);
+    void onRequestConnect(String macAddress);
+    void onConnectionChanged(int state);
+    void onPrintMessage(String msg);
 }

@@ -22,7 +22,14 @@
         <TextView
             android:id="@+id/tv_connected_device"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            style="@style/black_16_font"/>
+
+        <TextView
+            android:id="@+id/tv_connected_device_mac_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"/>
 
     </LinearLayout>
 

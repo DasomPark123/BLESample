@@ -3,7 +3,10 @@ package ex.dev.tool.blesample.central;
 import android.bluetooth.BluetoothGatt;
 import android.os.Bundle;
 
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -34,6 +37,9 @@ public class CentralActivity extends FragmentActivity
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(0);
 
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.viewpager, new ConnectionFragment(this));
+
         String[] tabsName = getResources().getStringArray(R.array.tabs_names);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) ->
@@ -46,5 +52,11 @@ public class CentralActivity extends FragmentActivity
             centralManager = CentralManager.getInstance(this);
 
         return centralManager;
+    }
+
+    public void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.viewpager, fragment).commit();
     }
 }

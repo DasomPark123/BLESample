@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -38,11 +39,15 @@ import ex.dev.tool.blesample.central.CentralActivity;
 import ex.dev.tool.blesample.central.CentralCallback;
 import ex.dev.tool.blesample.central.CentralManager;
 import ex.dev.tool.blesample.entities.BLEDevice;
+import ex.dev.tool.blesample.holders.RecyclerViewHolder;
 
 
 public class ConnectionFragment extends Fragment
 {
     private final String TAG = getClass().getSimpleName();
+
+    private TextView tvDeviceName;
+    private TextView tvMacAddress;
     private Button btnStartSearch;
     private Button btnStopSearch;
     private ImageButton btnClearAndRefresh;
@@ -54,6 +59,7 @@ public class ConnectionFragment extends Fragment
 
     private CentralManager centralManager;
     private BluetoothAdapter btAdapter;
+    private BluetoothDevice selectedDevice;
 
     private final int REQUEST_ENABLE_BT = 0x1001;
     private final int REQUEST_PERMISSIONS = 0x1002;
@@ -68,19 +74,17 @@ public class ConnectionFragment extends Fragment
         this.context = context;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-
+    public static ConnectionFragment newInstance(Context context) {
+        return new ConnectionFragment(context);
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_connection, container, false);
 
+        tvDeviceName = rootView.findViewById(R.id.tv_connected_device);
+        tvMacAddress = rootView.findViewById(R.id.tv_connected_device_mac_address);
         btnStartSearch = rootView.findViewById(R.id.btn_start_search);
         btnStartSearch.setOnClickListener(onScanClickListener);
         btnStopSearch = rootView.findViewById(R.id.btn_stop_search);
@@ -92,7 +96,7 @@ public class ConnectionFragment extends Fragment
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
-        rvAdapter = new RecyclerViewAdapter(devices, context, onItemClickListener);
+        rvAdapter = new RecyclerViewAdapter(devices, context, centralCallback);
         recyclerView.setAdapter(rvAdapter);
 
         final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -224,6 +228,37 @@ public class ConnectionFragment extends Fragment
         alert.show();
     }
 
+    public void requestConnection(String macAddress)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(getString(R.string.dialog_connection_title));
+        builder.setMessage(getString(R.string.dialog_connection_msg, macAddress));
+        builder.setCancelable(false);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                selectedDevice = btAdapter.getRemoteDevice(macAddress);
+                centralManager.connectDevice(selectedDevice);
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+                getActivity().finish();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.setCancelable(false);
+        alert.show();
+    }
+
     private void initBle()
     {
         centralManager = ((CentralActivity) getActivity()).getCentralManager();
@@ -305,15 +340,6 @@ public class ConnectionFragment extends Fragment
         }
     };
 
-    private View.OnClickListener onItemClickListener = new View.OnClickListener()
-    {
-        @Override
-        public void onClick(View v)
-        {
-
-        }
-    };
-
     private CentralCallback centralCallback = new CentralCallback()
     {
         @Override
@@ -335,7 +361,7 @@ public class ConnectionFragment extends Fragment
         }
 
         @Override
-        public void onStatus(String msg)
+        public void onPrintMessage(String msg)
         {
 
         }
@@ -344,6 +370,25 @@ public class ConnectionFragment extends Fragment
         public void onScanDeviceResult(BluetoothDevice device)
         {
             addDeviceToList(device);
+        }
+
+        @Override
+        public void onRequestConnect(String macAddress) {
+            requestConnection(macAddress);
+        }
+
+        @Override
+        public void onConnectionChanged(int state) {
+            if(state == CentralManager.CONNECTED)
+            {
+                tvDeviceName.setText(selectedDevice.getName());
+                tvMacAddress.setText(selectedDevice.getAddress());
+            }
+            else if(state == CentralManager.DISCONNECTED)
+            {
+                tvDeviceName.setText("");
+                tvMacAddress.setText("");
+            }
         }
     };
 }

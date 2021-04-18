@@ -52,10 +52,13 @@ public class CentralManager
 
     private BluetoothUtils bluetoothUtils;
 
-    private boolean isConnected = false;
-    private boolean isScanning = false;
+    public boolean isConnected = false;
+    public boolean isScanning = false;
 
     private final int SCAN_PERIOD = 10000;
+
+    public static final int CONNECTED = 0;
+    public static final int DISCONNECTED = 1;
 
     public CentralManager(Context context) {
         this.context = context;
@@ -93,14 +96,14 @@ public class CentralManager
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             centralCallback.onRequestLocationPermission();
-            centralCallback.onStatus("Requesting location permission");
+            centralCallback.onPrintMessage("Requesting location permission");
             return false;
         }
 
         /* 블루투스 사용 가능한지 체크 */
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
             centralCallback.onRequestEnableBLE();
-            centralCallback.onStatus("Requesting enable bluetooth");
+            centralCallback.onPrintMessage("Requesting enable bluetooth");
             return false;
         }
 
@@ -109,7 +112,7 @@ public class CentralManager
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
         {
             centralCallback.onRequestLocationOn();
-            centralCallback.onStatus("Requesting enable location on");
+            centralCallback.onPrintMessage("Requesting enable location on");
             return false;
         }
 
@@ -162,14 +165,14 @@ public class CentralManager
             scanHandler = null;
         isScanning = false;
 
-        centralCallback.onStatus("scanning stopped");
+        centralCallback.onPrintMessage("scanning stopped");
     }
 
     /* 스캔을 마쳤을때 동작 */
     private void scanComplete() {
         /* 스캔 결과가 아무것도 없는 경우*/
         if (scanResults.isEmpty()) {
-            centralCallback.onStatus("scan results is empty");
+            centralCallback.onPrintMessage("scan results is empty");
             Log.d(TAG, "scan result is empty");
             return;
         }
@@ -186,17 +189,17 @@ public class CentralManager
     }
 
     /* 디바이스 연결 */
-    private void connectDevice(BluetoothDevice device) {
-        centralCallback.onStatus("Connecting to " + device.getAddress());
+    public void connectDevice(BluetoothDevice device) {
+        centralCallback.onPrintMessage("Connecting to " + device.getAddress());
         GattClientCallback gattClientCallback = new GattClientCallback();
         bluetoothGatt = device.connectGatt(context, false, gattClientCallback);
         if(bluetoothGatt == null)
         {
-            centralCallback.onStatus("Failed create bluetoothGatt");
+            centralCallback.onPrintMessage("Failed create bluetoothGatt");
         }
         else
         {
-            centralCallback.onStatus("Successfully create bluetoothGatt");
+            centralCallback.onPrintMessage("Successfully create bluetoothGatt");
         }
     }
 
@@ -204,7 +207,7 @@ public class CentralManager
     /* 디바이스 연결 해제 */
     public void disconnectGattServer() {
         Log.d(TAG, "Closing Gatt connection");
-        centralCallback.onStatus("Closing Gatt connection");
+        centralCallback.onPrintMessage("Closing Gatt connection");
 
         isConnected = false;
 
@@ -236,9 +239,9 @@ public class CentralManager
         boolean isSuccess = bluetoothGatt.writeCharacteristic(characteristic);
 
         if (isSuccess) {
-            centralCallback.onStatus("Success to write command : " + message);
+            centralCallback.onPrintMessage("Success to write command : " + message);
         } else {
-            centralCallback.onStatus("Failed to write command");
+            centralCallback.onPrintMessage("Failed to write command");
             disconnectGattServer();
         }
     }
@@ -263,11 +266,11 @@ public class CentralManager
 
         if(isSuccess)
         {
-            centralCallback.onStatus("Success to read command");
+            centralCallback.onPrintMessage("Success to read command");
         }
         else
         {
-            centralCallback.onStatus("Failed to read command");
+            centralCallback.onPrintMessage("Failed to read command");
         }
     }
 
@@ -307,27 +310,41 @@ public class CentralManager
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
-            centralCallback.onStatus("onConnectionStateChange : " + status);
+            centralCallback.onPrintMessage("onConnectionStateChange : " + status);
             if (status != BluetoothGatt.GATT_SUCCESS) {
                 disconnectGattServer();
                 return;
             }
 
+            /* Connected */
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                stopScan();
-                centralCallback.onStatus("Connected");
-                isConnected = true;
                 Log.d(TAG, "Connected to the GATT server");
+                centralCallback.onConnectionChanged(CONNECTED);
+                stopScan();
+                isConnected = true;
                 gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            }
+            /* Disconnected */
+            else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.d(TAG, "Disconnected from the GATT server");
+                centralCallback.onConnectionChanged(DISCONNECTED);
                 disconnectGattServer();
             }
+
+            gatt.requestMtu(256);
+        }
+
+        @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+            super.onMtuChanged(gatt, mtu, status);
+
+            Log.d(TAG, "MTU size : " + mtu);
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
-            centralCallback.onStatus("onServicesDiscovered : " + status);
+            centralCallback.onPrintMessage("onServicesDiscovered : " + status);
 
             if (status != BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Device service discovery failed, status:" + status);
@@ -365,7 +382,7 @@ public class CentralManager
             Log.d(TAG, "characteristic changed : " + characteristic.getUuid().toString());
 
             String message = new String(characteristic.getValue());
-            centralCallback.onStatus("onCharacteristicChanged() : " + message);
+            centralCallback.onPrintMessage("onCharacteristicChanged() : " + message);
             //printData(characteristic);
         }
 
@@ -380,7 +397,7 @@ public class CentralManager
             }
 
             String message = new String(characteristic.getValue());
-            centralCallback.onStatus("onCharacteristicWrite() : " + message);
+            centralCallback.onPrintMessage("onCharacteristicWrite() : " + message);
         }
 
         @Override
@@ -390,7 +407,7 @@ public class CentralManager
                 Log.d(TAG, "Characteristic read successfully");
 
                 String message = new String(characteristic.getValue());
-                centralCallback.onStatus("onCharacteristicRead() : " + message);
+                centralCallback.onPrintMessage("onCharacteristicRead() : " + message);
 
             } else {
                 Log.e(TAG, "Characteristic read unsuccessful, status: " + status);
@@ -401,14 +418,14 @@ public class CentralManager
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
 
-            centralCallback.onStatus("onDescriptorWrite() status : " + status);
+            centralCallback.onPrintMessage("onDescriptorWrite() status : " + status);
         }
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
 
-            centralCallback.onStatus("onDescriptorRead() status : " + status);
+            centralCallback.onPrintMessage("onDescriptorRead() status : " + status);
         }
 
         //        private void printData(BluetoothGattCharacteristic characteristic) {

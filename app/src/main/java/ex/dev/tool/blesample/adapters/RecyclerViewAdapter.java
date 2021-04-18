@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 import ex.dev.tool.blesample.R;
+import ex.dev.tool.blesample.central.CentralCallback;
 import ex.dev.tool.blesample.entities.BLEDevice;
 import ex.dev.tool.blesample.holders.RecyclerViewHolder;
 
@@ -19,13 +20,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
 {
     private Context context;
     private ArrayList<BLEDevice> devices;
-    private View.OnClickListener onClickListener;
+    private CentralCallback centralCallback;
 
-    public RecyclerViewAdapter(ArrayList<BLEDevice> devices, Context context, View.OnClickListener onClickListener)
+    public RecyclerViewAdapter(ArrayList<BLEDevice> devices, Context context, CentralCallback centralCallback)
     {
         this.devices = devices;
         this.context = context;
-        this.onClickListener = onClickListener;
+        this.centralCallback = centralCallback;
     }
 
     @NonNull
@@ -36,7 +37,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
         LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         View view = inflater.inflate(R.layout.item_device, parent, false);
-        RecyclerViewHolder holder = new RecyclerViewHolder(view, onClickListener);
+        RecyclerViewHolder holder = new RecyclerViewHolder(view, devices, centralCallback);
         return holder;
     }
 
