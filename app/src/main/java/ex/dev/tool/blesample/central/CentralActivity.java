@@ -46,6 +46,12 @@ public class CentralActivity extends FragmentActivity
                 tab.setText(tabsName[position])).attach();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        centralManager.disconnectGattServer();
+    }
+
     public CentralManager getCentralManager()
     {
         if(centralManager == null)

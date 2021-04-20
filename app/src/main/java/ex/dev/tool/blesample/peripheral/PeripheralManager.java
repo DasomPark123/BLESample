@@ -86,7 +86,7 @@ public class PeripheralManager
     public void startAdvertising() {
         bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
         if (bluetoothLeAdvertiser == null) {
-            peripheralCallback.onStatusMsg("Failed to create advertiser");
+            peripheralCallback.onPrintMessage("Failed to create advertiser");
             return;
         }
 
@@ -116,14 +116,14 @@ public class PeripheralManager
             return;
 
         bluetoothLeAdvertiser.stopAdvertising(advCallback);
-        peripheralCallback.onStatusMsg("Stop advertising");
+        peripheralCallback.onPrintMessage("Stop advertising");
     }
 
     private void openServer() {
         bluetoothGattServer = bluetoothManager.openGattServer(context, bluetoothGattServerCallback);
         if (bluetoothGattServer == null) {
             Log.d(TAG, "Unable to create GATT server");
-            peripheralCallback.onStatusMsg("Unable to create GATT server");
+            peripheralCallback.onPrintMessage("Unable to create GATT server");
             return;
         }
         bluetoothGattServer.addService(bluetoothGattService);
@@ -133,7 +133,7 @@ public class PeripheralManager
         if (bluetoothGattServer != null) {
             bluetoothGattServer.close();
             bluetoothGattServer = null;
-            peripheralCallback.onStatusMsg("Close server");
+            peripheralCallback.onPrintMessage("Close server");
         }
     }
 
@@ -143,30 +143,30 @@ public class PeripheralManager
         if(bluetoothDevice == null)
         {
             Log.e(TAG,"Bluetooth is null");
-            peripheralCallback.onStatusMsg("Bluetooth is null");
+            peripheralCallback.onPrintMessage("Bluetooth is null");
             return;
         }
         else if(bluetoothDevice.getAddress() == null)
         {
             Log.d(TAG,"GattServer lost device address");
-            peripheralCallback.onStatusMsg("GattServer lost device address");
+            peripheralCallback.onPrintMessage("GattServer lost device address");
             return;
         }
         else if(bluetoothGattServer == null)
         {
             Log.d(TAG, "GattServer is null");
-            peripheralCallback.onStatusMsg("GattServer is null");
+            peripheralCallback.onPrintMessage("GattServer is null");
             return;
         }
 
         boolean confirm = (bluetoothGattCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) == BluetoothGattCharacteristic.PROPERTY_INDICATE;
-        peripheralCallback.onStatusMsg(confirm ? "indication" : "notification");
+        peripheralCallback.onPrintMessage(confirm ? "indication" : "notification");
         bluetoothGattCharacteristic.setValue(message.getBytes()); //20 byte limit
         boolean notifyResult = bluetoothGattServer.notifyCharacteristicChanged(bluetoothDevice, bluetoothGattCharacteristic, confirm);
         if(notifyResult)
-            peripheralCallback.onStatusMsg("notify success : " + message);
+            peripheralCallback.onPrintMessage("notify success : " + message);
         else
-            peripheralCallback.onStatusMsg("notify fail : " + message);
+            peripheralCallback.onPrintMessage("notify fail : " + message);
     }
 
     /* Advertise Callback */
@@ -174,13 +174,13 @@ public class PeripheralManager
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             super.onStartSuccess(settingsInEffect);
-            peripheralCallback.onStatusMsg("GattServer onStartSuccess");
+            peripheralCallback.onPrintMessage("GattServer onStartSuccess");
         }
 
         @Override
         public void onStartFailure(int errorCode) {
             super.onStartFailure(errorCode);
-            peripheralCallback.onStatusMsg("GattServer onStartFailure");
+            peripheralCallback.onPrintMessage("GattServer onStartFailure");
         }
     };
 
@@ -193,14 +193,14 @@ public class PeripheralManager
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (newState == BluetoothGatt.STATE_CONNECTED) {
                     bluetoothDevice = device;
-                    peripheralCallback.onStatusMsg("GattServer STATE_CONNECTED");
+                    peripheralCallback.onPrintMessage("GattServer STATE_CONNECTED");
                 } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                     bluetoothDevice = null;
-                    peripheralCallback.onStatusMsg("GattServer STATE_DISCONNECTED");
+                    peripheralCallback.onPrintMessage("GattServer STATE_DISCONNECTED");
                 }
             } else {
                 bluetoothDevice = null;
-                peripheralCallback.onStatusMsg("GattSever GATT_FAILURE");
+                peripheralCallback.onPrintMessage("GattSever GATT_FAILURE");
             }
         }
 
@@ -209,7 +209,7 @@ public class PeripheralManager
         public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
 
-            peripheralCallback.onStatusMsg("onCharacteristicReadRequest()");
+            peripheralCallback.onPrintMessage("onCharacteristicReadRequest()");
 
             /* offset이 0이 아닌 경우는 GATT_INVALID_OFFSET 보내줌 */
             if (offset != 0) {
@@ -218,7 +218,7 @@ public class PeripheralManager
             }
 
             bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, bluetoothGattCharacteristic.getValue());
-            peripheralCallback.onStatusMsg("onCharacteristicReadRequest() send response");
+            peripheralCallback.onPrintMessage("onCharacteristicReadRequest() send response");
         }
 
         /* Central에서 속성 쓰기 요청이 온 경우 */
@@ -228,13 +228,13 @@ public class PeripheralManager
 
             /* Central에서 데이터를 읽어옴 */
             String message = new String(value);
-            peripheralCallback.onStatusMsg("characteristicWriteRequest() : " + message);
+            peripheralCallback.onPrintMessage("characteristicWriteRequest() : " + message);
             bluetoothGattCharacteristic.setValue(message);
 
             /* Central이 데이터를 쓴 후 응답이 필요할 경우에는 응답 데이터 보내줌 */
             if (responseNeeded) {
                 bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
-                peripheralCallback.onStatusMsg("onCharacteristicWriteRequest() send response");
+                peripheralCallback.onPrintMessage("onCharacteristicWriteRequest() send response");
             }
 
             /* Characteristic이 변경되었음을 알림 */
@@ -253,7 +253,7 @@ public class PeripheralManager
             }
 
             bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, descriptor.getValue());
-            peripheralCallback.onStatusMsg("onDescriptorReadRequest() send response");
+            peripheralCallback.onPrintMessage("onDescriptorReadRequest() send response");
 
         }
 
@@ -263,19 +263,18 @@ public class PeripheralManager
             super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value);
 
             String message = new String(value);
-            peripheralCallback.onStatusMsg("onDescriptorWriteRequest() : " + message);
-            peripheralCallback.onToast(value.toString());
+            peripheralCallback.onPrintMessage("onDescriptorWriteRequest() : " + message);
 
             if(responseNeeded) {
                 bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
-                peripheralCallback.onStatusMsg("onDescriptorWriteRequest() : " + message);
+                peripheralCallback.onPrintMessage("onDescriptorWriteRequest() : " + message);
             }
         }
 
         @Override
         public void onNotificationSent(BluetoothDevice device, int status) {
             super.onNotificationSent(device, status);
-            peripheralCallback.onStatusMsg("onNotificationSent status : " + status);
+            peripheralCallback.onPrintMessage("onNotificationSent status : " + status);
         }
     };
 }

@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -36,6 +37,7 @@ public class DataCommunicationFragment extends Fragment
     private Button btnClear;
 
     private TextView tvData;
+    private ScrollView scrollView;
 
     public DataCommunicationFragment(Context context)
     {
@@ -60,13 +62,13 @@ public class DataCommunicationFragment extends Fragment
         btnDisconnect.setOnClickListener(onClickListener);
         btnClear = rootView.findViewById(R.id.btn_clear);
         btnClear.setOnClickListener(onClickListener);
-
         tvData = rootView.findViewById(R.id.tv_data);
+        scrollView = ((ScrollView) rootView.findViewById(R.id.sv_data));
+
+        initBle();
 
         if(!isConnected)
             moveToConnectionFragment();
-
-        initBle();
 
         return rootView;
     }
@@ -76,7 +78,8 @@ public class DataCommunicationFragment extends Fragment
         centralManager = ((CentralActivity)getActivity()).getCentralManager();
         centralManager.setCentralCallback(centralCallback);
         centralManager.initBle(context);
-        isConnected =  centralManager.isConnected;
+        isConnected =  CentralManager.isConnected;
+        centralManager.stopScan();
     }
 
     public void moveToConnectionFragment()
@@ -99,6 +102,28 @@ public class DataCommunicationFragment extends Fragment
         AlertDialog alert = builder.create();
         alert.setCancelable(false);
         alert.show();
+    }
+
+    private void showStatusMsg(final String message)
+    {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String oldMsg = tvData.getText().toString();
+                tvData.setText(oldMsg + "\n" + message);
+                //scrollToBottom();
+            }
+        });
+    }
+
+    private void scrollToBottom()
+    {
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            }
+        });
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -124,7 +149,7 @@ public class DataCommunicationFragment extends Fragment
             }
             else if(v.getId() == R.id.btn_clear)
             {
-
+                tvData.setText("");
             }
         }
     };
@@ -165,7 +190,7 @@ public class DataCommunicationFragment extends Fragment
 
         @Override
         public void onPrintMessage(String msg) {
-            tvData.setText(msg);
+            showStatusMsg(msg);
         }
     };
 }

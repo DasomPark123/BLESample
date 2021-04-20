@@ -52,7 +52,7 @@ public class CentralManager
 
     private BluetoothUtils bluetoothUtils;
 
-    public boolean isConnected = false;
+    public static boolean isConnected = false;
     public boolean isScanning = false;
 
     private final int SCAN_PERIOD = 10000;
@@ -242,7 +242,6 @@ public class CentralManager
             centralCallback.onPrintMessage("Success to write command : " + message);
         } else {
             centralCallback.onPrintMessage("Failed to write command");
-            disconnectGattServer();
         }
     }
 
@@ -322,7 +321,7 @@ public class CentralManager
                 centralCallback.onConnectionChanged(CONNECTED);
                 stopScan();
                 isConnected = true;
-                gatt.discoverServices();
+                gatt.requestMtu(512);
             }
             /* Disconnected */
             else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -330,15 +329,14 @@ public class CentralManager
                 centralCallback.onConnectionChanged(DISCONNECTED);
                 disconnectGattServer();
             }
-
-            gatt.requestMtu(256);
         }
 
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             super.onMtuChanged(gatt, mtu, status);
-
             Log.d(TAG, "MTU size : " + mtu);
+            centralCallback.onPrintMessage("" + mtu);
+            gatt.discoverServices();
         }
 
         @Override

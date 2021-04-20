@@ -14,7 +14,7 @@
     <string name="dialog_gps_msg">Location is supposed to be enabled to use BLE. Please enable Location on settings.</string>
     <string name="dialog_connection_title">Connection</string>
     <string name="dialog_connection_msg">Do you want to connect with %1$s?</string>
-    <string name="dialog_not_connected">Please connect with</string>
+    <string name="dialog_not_connected">Not connected</string>
 
     <!-- Connection Fragment -->
     <string name="ble_connected_device">BLE connected device</string>

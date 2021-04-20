@@ -42,6 +42,7 @@ public class PeripheralActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        peripheralManager.closeServer();
     }
 
     private void initView()
@@ -140,13 +141,8 @@ public class PeripheralActivity extends AppCompatActivity
         }
 
         @Override
-        public void onStatusMsg(String message) {
+        public void onPrintMessage(String message) {
             showStatusMsg(message);
-        }
-
-        @Override
-        public void onToast(String message) {
-            utils.showToast(PeripheralActivity.this, message, false);
         }
     };
 }

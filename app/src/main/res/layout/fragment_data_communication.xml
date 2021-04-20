@@ -8,7 +8,7 @@
         android:id="@+id/tv_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/peripheral"
+        android:text="@string/central"
         style="@style/title"
         android:layout_alignParentTop="true"/>
 
@@ -16,9 +16,11 @@
         android:id="@+id/tv_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_title"/>
+        android:layout_below="@id/tv_title"
+        android:layout_above="@+id/linear_buttons"/>
 
     <LinearLayout
+        android:id="@+id/linear_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
